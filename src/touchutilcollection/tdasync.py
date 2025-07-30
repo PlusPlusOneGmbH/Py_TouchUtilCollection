@@ -1,6 +1,8 @@
 from td import * # pyright: ignore[reportMissingImports]
-from timing import Ticker, Timer
-from typing import Union, List, Awaitable
+
+from .timing import Ticker, Timer
+
+from typing import Union, List
 
 import asyncio
 from asyncio import Task, _CoroutineLike
