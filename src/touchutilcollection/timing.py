@@ -10,19 +10,30 @@ class Timer:
         self.stepsize = stepsize
         self.loop = loop
         self.callbacks = list() + callbacks
+        self._runner:Run
+        self.active = True
         self.start()
+    
+    def __del__(self):
+        if not isinstance( self._runner, Run): return
+        try:
+            self._runner.kill()
+        except tdError:
+            pass
 
     callbacks:List[Timer_Callback] = list()
 
     def start(self):
-        run( "args[0]()", self.tick, delayFrames=self.stepsize )
+        self._runner = run( "args[0]()", self.tick, delayFrames=self.stepsize )
 
     def tick(self):
-        for callback in self.callbacks:
-            try:
-                callback(self)
-            except Exception as e:
-                debug("Error during timer callback", callback, e)
+        if self.active:
+            for callback in self.callbacks:
+                try:
+                    callback(self)
+                except Exception as e:
+                    debug("Error during timer callback", callback, e)
+        
         if self.loop: self.start()
 
 class Ticker(Timer):

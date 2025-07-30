@@ -4,7 +4,7 @@ __minimum_td_version__ = "2023.1200"
 
 from importlib.metadata import version
 
-__version__ = version("py-touchutilcollection")
+__version__ = version("touchutilcollection")
 
 import logging
 from os import environ
