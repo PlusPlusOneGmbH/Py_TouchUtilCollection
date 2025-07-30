@@ -2,9 +2,11 @@ from td import *  # pyright: ignore[reportMissingImports]
 
 __minimum_td_version__ = "2023.1200"
 
-from importlib.metadata import version
-
-__version__ = version("touchutilcollection")
+from importlib.metadata import version, PackageNotFoundError
+try:
+    __version__ = version("touchutilcollection")
+except PackageNotFoundError:
+    __version__ = "DEV"
 
 import logging
 from os import environ

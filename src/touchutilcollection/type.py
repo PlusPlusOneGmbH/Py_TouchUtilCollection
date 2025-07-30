@@ -5,18 +5,22 @@ T = TypeVar("T")
 def is_tuple(value) -> TypeGuard[Tuple]:
 	return isinstance( value, tuple )
 
-def op_as(pattern:Union[str, int, Tuple[Union[str, int], ...]], asType:Type[T], includeUtility = False):
+def op_as(pattern:Union[str, int, Tuple[Union[str, int], ...]], asType:Type[T], includeUtility = False, assert_type = True):
 	# T is in use. This is only a utility function!
 	if is_tuple( pattern ): _pattern = pattern
 	else: _pattern = (pattern,)
-
-	return cast( Union[T, None], op(*_pattern, includeUtility = includeUtility)) # pyright: ignore[reportArgumentType]
+	result = op(*_pattern, includeUtility = includeUtility) # pyright: ignore[reportArgumentType]
+	if assert_type: assert isinstance( result, asType )
+	return cast( T, result) 
 
 opAs = op_as
 
-def op_as_ex(pattern:Union[str, int, Tuple[Union[str, int], ...]], asType:Type[T], includeUtility = False): 
+def op_as_ex(pattern:Union[str, int, Tuple[Union[str, int], ...]], asType:Type[T], includeUtility = False, assert_type = True): 
 	if is_tuple( pattern ): _pattern = pattern
 	else: _pattern = (pattern,)
-	return cast( T, opex(*_pattern, includeUtility = includeUtility)) # pyright: ignore[reportArgumentType]
+	result = opex(*_pattern, includeUtility = includeUtility) # pyright: ignore[reportArgumentType]
+	if assert_type: assert isinstance( result, asType )
+	return cast( T, result) 
 
 opAsEx = op_as_ex
+
