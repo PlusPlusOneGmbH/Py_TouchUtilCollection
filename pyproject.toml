@@ -1,6 +1,6 @@
 [project]
 name = "touchutilcollection"
-version = "0.2.0"
+version = "0.2.1"
 description = "A collection of practical utilities for TouchDesigner."
 readme = "README.md"
 authors = [
