@@ -1,5 +1,5 @@
 [project]
-name = "py-touchutilcollection"
+name = "touchutilcollection"
 version = "0.1.0"
 description = "A collection of practical utilities for TouchDesigner."
 readme = "README.md"
