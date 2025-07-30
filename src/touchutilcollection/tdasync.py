@@ -5,7 +5,7 @@ from .timing import Ticker, Timer
 from typing import Union, List, Coroutine
 
 import asyncio
-from asyncio import Task, _CoroutineLike
+from asyncio import Task
 
 loop = asyncio.new_event_loop()
 loop.stop()
