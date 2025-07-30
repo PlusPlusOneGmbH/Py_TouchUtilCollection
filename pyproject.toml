@@ -1,0 +1,14 @@
+[project]
+name = "py-touchutilcollection"
+version = "0.1.0"
+description = "A collection of practical utilities for TouchDesigner."
+readme = "README.md"
+authors = [
+    { name = "Wieland Hilker", email = "Wieland@PlusPlus.One" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
