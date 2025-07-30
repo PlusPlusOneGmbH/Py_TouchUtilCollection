@@ -2,7 +2,7 @@ from td import * # pyright: ignore[reportMissingImports]
 
 from .timing import Ticker, Timer
 
-from typing import Union, List
+from typing import Union, List, Coroutine
 
 import asyncio
 from asyncio import Task, _CoroutineLike
@@ -17,7 +17,7 @@ def _async_tick( timer:Timer):
 _async_ticker = Ticker([ _async_tick ])
 
 
-def execute(coroutines:Union[ List[_CoroutineLike], _CoroutineLike]) -> List[Task]:
+def execute(coroutines:Union[ List[Coroutine], Coroutine]) -> List[Task]:
 	"""
 		Runs all routines concurrently and returns a list of tasks.
 	"""
