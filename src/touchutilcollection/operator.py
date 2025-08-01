@@ -1,6 +1,6 @@
 from td import *  # pyright: ignore[reportMissingImports]
 
-from .type import op_as_ex
+from .type import op_ex_as
 
 from pathlib import Path
 from typing import cast, TypeVar, Union, Type
@@ -8,7 +8,7 @@ T = TypeVar("T")
 
 
 
-def ensure_path(path:str, root_comp = op_as_ex("/", COMP), comp_type:Type[T] = baseCOMP, strict_type_assert:bool= False) -> T:
+def ensure_path(path:str, root_comp = op_ex_as("/", COMP), comp_type:Type[T] = baseCOMP, strict_type_assert:bool= False) -> T:
     """Ensures the existence of a COMP at the given path.
 
     Parameters:
@@ -36,12 +36,22 @@ def ensure_path(path:str, root_comp = op_as_ex("/", COMP), comp_type:Type[T] = b
     return cast(T, current_level)
 
 
-def ensure_tox(op_path:str, file_path:Union[str, Path], root_comp = op_as_ex("/", COMP)):
+def refresh_tox(target_operator:COMP):
+    target_operator.par.enableexternaltoxpulse.pulse(True)
+
+
+def ensure_tox(op_path:str, file_path:Union[str, Path], root_comp = op_ex_as("/", COMP)):
     target_comp = op( op_path ) or ensure_path( str(op_path) , root_comp=root_comp)
 
     if Path(target_comp.par.externaltox.eval()).absolute != Path( file_path ).absolute():
         target_comp.par.externaltox.val = str(file_path)
-        target_comp.par.enableexternaltoxpulse.pulse(True) # actually no required to pass value.
+        refresh_tox( cast(COMP, target_comp) ) 
     return target_comp
 
-
+def iter_parents( target_op:OP ):
+    while True:
+        next_parent = target_op.parent()
+        if next_parent is None: break
+        target_op = next_parent
+        yield target_op
+    return target_op
