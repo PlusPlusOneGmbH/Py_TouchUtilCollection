@@ -1,16 +1,24 @@
-from typing import Any, TypeVar, Type, overload, ClassVar
+from typing import Any, TypeVar, Type, overload, ClassVar, cast
 from abc import abstractmethod
 from dataclasses import dataclass
 from . import partypes
 
+
+## Utils Start
 T = TypeVar("T")
+
+lookupdict = {}
+
+def pop_default_kwarsg( target_dict:dict ):
+    return {
+        key : value for key, value in target_dict.items() if key not in  ["page", "label"]
+    }
 
 @dataclass
 class _BasePar():
     name:str
     page:str
     label:str = ""
-
     @abstractmethod
     def __call__(self, ownerComp) -> Any:
         raise NotImplemented
@@ -31,12 +39,16 @@ def ensure_parameter(ownerComp, par_name:str, pagename:str, adder_method_name:st
         # now lets check if the par already exists, if not    
         getattr(page, adder_method_name)( par_name )
     return ownerComp.par[par_name]
-    
+## Utils End
 
+
+
+## Par Int
 @dataclass(kw_only=True)
 class _ParInt(_BasePar):
-    min:float
-    max:float
+    min:float = 0
+    max:float = 1
+    default:int = 0
     def __call__(self, ownerComp) -> Any:
         target_par = ensure_parameter(
             ownerComp, self.name, self.page, "appendInt", "Int"
@@ -44,12 +56,26 @@ class _ParInt(_BasePar):
         target_par.min = self.min
         target_par.max = self.max
         return target_par
+    
+lookupdict[partypes.ParInt] = _ParInt
+
+@overload
+def parfield(field_type:Type[partypes.ParInt], 
+             name:str, 
+             label = "",
+             page:str = "Custom", 
+             default = 0,
+             min = 0, 
+             max = 1) -> partypes.ParInt:
+    pass
 
 
+## Par Float
 @dataclass(kw_only=True)
 class _ParFloat(_BasePar):
-    min:float
-    max:float
+    min:float = 0
+    max:float = 1
+    default:float = 0
     def __call__(self, ownerComp) -> Any:
         target_par = ensure_parameter(
             ownerComp, self.name, self.page, "appendFloat", "Float"
@@ -57,21 +83,79 @@ class _ParFloat(_BasePar):
         target_par.min = self.min
         target_par.max = self.max
         return target_par
-from typing import cast
+
+lookupdict[partypes.ParFloat] = _ParFloat
 
 @overload
-def parfield(fieldType:Type[partypes.ParInt], name:str, page:str = "Custom", label = "",min = 0, max = 1) -> partypes.ParInt:
+def parfield(field_type:Type[partypes.ParFloat], 
+             name:str, 
+             label = "",
+             page:str = "Custom", 
+             default = 0,
+             min = 0, 
+             max = 1, ) -> partypes.ParFloat:
     pass
+
+
+## Par Menu
+from typing import List
+@dataclass(kw_only=True)
+class _ParMenu(_BasePar):
+    menuNames:List[str]
+    menuLabels:List[str]
+    def __call__(self, ownerComp) -> Any:
+        target_par = ensure_parameter(
+            ownerComp, self.name, self.page, "appendMenu", "Menu"
+        )      
+        target_par.menuNames, target_par.menuLabels = self.menuNames, self.menuLabels or self.menuNames
+        return target_par
+    
+lookupdict[partypes.ParMenu] = _ParMenu
+
 @overload
-def parfield(fieldType:Type[partypes.ParFloat], name:str, page:str = "Custom", label = "",min = 0, max = 1) -> partypes.ParFloat:
+def parfield(field_type:Type[partypes.ParMenu], 
+             name:str, 
+             label = "",
+             page:str = "Custom", 
+             default = "", 
+             menuLabels:List[str] = [], 
+             menuNames:List[str] = []) -> partypes.ParMenu:
     pass
-   
-def parfield(fieldType:Type[T], name:str, *args, page:str = "Custom", label= "", **kwargs): 
-    if fieldType == partypes.ParInt: 
-        return cast( T, _ParInt(name = name, label = label, page= page, min = kwargs["min"], max = kwargs["max"]) )
-    if fieldType == partypes.ParFloat:
-        return cast( T,  _ParFloat(name = name, label = label, page= page, min = kwargs["min"], max = kwargs["max"]))
-    return cast(T, None)
+
+## Str Menu
+
+class _ParStrMenu(_BasePar):
+    menuNames:List[str]
+    menuLabels:List[str]
+    def __call__(self, ownerComp) -> Any:
+        target_par = ensure_parameter(
+            ownerComp, self.name, self.page, "appendStrMenu", "StrMenu"
+        )      
+        target_par.menuNames, target_par.menuLabels = self.menuNames, self.menuLabels or self.menuNames
+        return target_par
+    
+lookupdict[partypes.ParStrMenu] = _ParStrMenu
+
+@overload
+def parfield(field_type:Type[partypes.ParStrMenu], 
+             name:str, 
+             label = "",
+             page:str = "Custom", 
+             default = "", 
+             menuLabels:List[str] = [], 
+             menuNames:List[str] = []) -> partypes.ParStrMenu:
+    pass
+
+## Implementation
+
+def parfield(field_type:Type[T], name:str, *args, page:str = "Custom", label= "",**kwargs): 
+    pass_args = {
+        "name" : name, 
+        "label" : label,
+        "page" : page,
+        **pop_default_kwarsg( kwargs )
+    }
+    return cast( T, lookupdict[field_type](**pass_args) )
 
 class EnsureParCollection( ):
     pass
@@ -86,14 +170,14 @@ class EnsureExtension ():
             setattr( self.par, attr_name, attr_object(ownerComp) )
 
 
-
+__all__ = [ "EnsureExtension", "EnsureParCollection", "parfield" ]
 
 
 class extExample( EnsureExtension ):
     class par( EnsureParCollection ):
         Foo = parfield(partypes.ParInt, "Foo")
         Bar = parfield(partypes.ParFloat, "MyFloat", page ="Different", min = 0, max = 10)
+        Baba = parfield( partypes.ParMenu, "MyMenu", menuLabels=["Eins", "Zwei", "Drei" ] )
 
     def __init__(self, ownerComp) -> None:
         super().__init__(ownerComp)
-        self.par.Bar
