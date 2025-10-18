@@ -11,15 +11,16 @@ class TimeTracker:
     
     def __exit__(self, type, value, traceback):
         self.end = datetime.now()
+        if self.print_on_exit: debug( f"Meassured Time in microseconds: {self.microseconds}")
 
     @property
-    def difference(self):
+    def meassurement(self):
         return self.end - self.start
     
     @property
     def milliseconds(self):
-        return self.difference.microseconds * 1000
+        return self.meassurement.microseconds * 1000
     
     @property
     def microseconds(self):
-        return self.difference.microseconds
+        return self.meassurement.microseconds

@@ -40,13 +40,28 @@ def refresh_tox(target_operator:COMP):
     target_operator.par.enableexternaltoxpulse.pulse(True)
 
 
-def ensure_tox(op_path:str, file_path:Union[str, Path], root_comp = op_ex_as("/", COMP)):
-    target_comp = op( op_path ) or ensure_path( str(op_path) , root_comp=root_comp)
+from os import environ
+from pathlib import Path
+def ensure_tox(filepath, opshortcut, root_comp = root):
 
-    if Path(target_comp.par.externaltox.eval()).absolute != Path( file_path ).absolute():
-        target_comp.par.externaltox.val = str(file_path)
-        refresh_tox( cast(COMP, target_comp) ) 
-    return target_comp
+	if (_potentialy:= getattr(op, opshortcut, None)) is not None:
+		return _potentialy
+
+	current_comp = root_comp
+	for path_element in environ.get("ENSURE_UTILITY_PATH", "utils").strip("/ ").split("/"):
+		current_comp = current_comp.op( path_element ) or current_comp.create( baseCOMP, path_element)
+
+	newly_loaded 							= current_comp.loadTox(filepath)
+	newly_loaded.name 						= opshortcut
+	newly_loaded.par.opshortcut.val 		= opshortcut
+	newly_loaded.par.externaltox.val 		= Path(filepath).relative_to( Path(".").absolute() )
+	newly_loaded.par.enableexternaltox.val 	= True
+	newly_loaded.par.savebackup.val 		= False
+	newly_loaded.par.reloadcustom.val 		= False
+	newly_loaded.par.reloadbuiltin.val 		= False
+	newly_loaded.par.enableexternaltoxpulse.pulse()
+	
+	return newly_loaded
 
 def iter_parents( target_op:OP ):
     while True:
