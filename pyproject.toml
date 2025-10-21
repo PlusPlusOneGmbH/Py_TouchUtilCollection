@@ -1,5 +1,5 @@
 [project]
-name = "touchutilcollection"
+name = "tdp-touchutilcollection"
 version = "0.4.0"
 description = "A collection of practical utilities for TouchDesigner."
 readme = "README.md"
@@ -10,5 +10,5 @@ requires-python = ">=3.11"
 dependencies = []
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
