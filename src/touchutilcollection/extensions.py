@@ -17,7 +17,7 @@ def pop_default_kwarsg( target_dict:dict ):
 @dataclass
 class _Par():
     data : dict
-    par_type : partypes.Par
+    par_type : partypes._Par
 
     def __call__(self, ownerComp) -> Any:
         target_par = ensure_parameter(
@@ -47,59 +47,27 @@ def ensure_parameter(ownerComp, par_name:str, pagename:str, adder_method_name:st
     return ownerComp.par[par_name] # This noteably only works with single value parameters!
 ## Utils End
 
-@overload
-def parfield(field_type:Type[partypes.ParInt], 
-             name:str, 
-             label = "",
-             page:str = "Custom", 
-             default = 0,
-             min = 0, 
-             max = 1) -> partypes.ParInt:
-    pass
-
-@overload
-def parfield(field_type:Type[partypes.ParFloat], 
-             name:str, 
-             label = "",
-             page:str = "Custom", 
-             default = 0.0,
-             min = 0.0, 
-             max = 1.0, ) -> partypes.ParFloat:
-    pass
-
-
-@overload
-def parfield(field_type:Type[Union[partypes.ParMenu, partypes.ParStrMenu]], 
-             name:str, 
-             label = "",
-             page:str = "Custom", 
-             default = "", 
-             menuLabels:List[str] = [], 
-             menuNames:List[str] = []) -> Union[partypes.ParMenu, partypes.ParStrMenu]:
-    pass
-
-@overload
-def parfield(field_type:Type[partypes.ParPulse], 
-             name:str, 
-             label = "",
-             page:str = "Custom"
-            ) -> partypes.ParPulse:
-    pass
-
-@overload
-def parfield(field_type:Type[partypes.ParMomentary], 
-             name:str, 
-             label = "",
-             page:str = "Custom", 
-            ) -> partypes.ParMomentary:
-    pass
-
-
 
 T = TypeVar("T")
+from typing import Unpack
 
 
-def parfield(field_type:Type[T], name:str, *args, page:str = "Custom", label= "",**kwargs): 
+@overload
+def parfield(field_type:Type[partypes.ParFloat], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParFloat._args]): 
+    pass
+
+
+@overload
+def parfield(field_type:Type[partypes.ParInt], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParInt._args]): 
+    pass
+
+@overload
+def parfield(field_type:Type[partypes.ParMenu], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParMenu._args]): 
+    pass
+
+
+
+def parfield(field_type:Type[T], name:str, page:str = "Custom", label= "",**kwargs): 
     pass_args = {
         "name" : name, 
         "label" : label or name,
@@ -107,6 +75,7 @@ def parfield(field_type:Type[T], name:str, *args, page:str = "Custom", label= ""
         **pop_default_kwarsg( kwargs )
     }
     return cast( T, _Par(pass_args, field_type) ) # pyright: ignore[reportArgumentType] # Yeah yeah, I know :)
+
 
 #class EnsureParCollection( ):
 #    pass

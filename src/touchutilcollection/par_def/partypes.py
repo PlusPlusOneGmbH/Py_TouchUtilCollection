@@ -11,83 +11,83 @@ from abc import abstractmethod
 from enum import Enum
 
 class ParMode(Enum):
-    BIND = "BIND"
-    CONSTANT = "CONSTANT"
-    EXPORT = "EXPORT"
-    EXPRESSION = "EXPRESSION"
+	BIND = "BIND"
+	CONSTANT = "CONSTANT"
+	EXPORT = "EXPORT"
+	EXPRESSION = "EXPRESSION"
 
 
 import typing as _T
 ParValueT = _T.TypeVar('ParValueT')
 
+from typing import NotRequired, TypedDict
 ###
-from typing import TypedDict
 class _ParArgs( TypedDict, _T.Generic[ParValueT] ):
-    defaultMode : ParMode
-    
-    _creationMethodName : str
-    style:str
+		defaultMode : NotRequired[ParMode]	= ParMode.CONSTANT	
+		default : NotRequired[ParValueT]
+		defaultExpr : NotRequired[str]
+		defaultBindExpr : NotRequired[str]
+		readOnly : NotRequired[bool]
+		enable : NotRequired[bool]
+		expr : NotRequired[str]
+		enableExpr : NotRequired[str]
+		bindExpr : NotRequired[str]
+		help : NotRequired[str]
 
-    val:ParValueT
+class _Par(_T.Generic[ParValueT]):
+	class _args(_ParArgs[ParValueT]): # pyright: ignore[reportGeneralTypeIssues]
+		pass
+
+	defaultMode : ParMode
 	
-    default : ParValueT
-    defaultExpr : str
-    defaultBindExpr : str
+	_creationMethodName : str
+	style:str
+
+	val:ParValueT
+	@abstractmethod
+	def eval(self) -> ParValueT:
+		pass
 	
-    readOnly : bool
-    enable : bool
-
-    owner : Any
-
-    expr : str
-    enableExpr : str
-    bindExpr :str
+	default : ParValueT
+	defaultExpr : str
+	defaultBindExpr : str
 	
-    name : str
-    label : str
-    help : str
+	readOnly : bool
+	enable : bool
 
-class Par(_T.Generic[ParValueT]):
-    args = _ParArgs
-    defaultMode : ParMode
-    
-    _creationMethodName : str
-    style:str
+	owner : Any
 
-    val:ParValueT
-    @abstractmethod
-    def eval(self) -> ParValueT:
-        pass
+	expr : str
+	enableExpr : str
+	bindExpr :str
 	
-    default : ParValueT
-    defaultExpr : str
-    defaultBindExpr : str
+	name : str
+	label : str
+	help : str
 	
-    readOnly : bool
-    enable : bool
+	@abstractmethod
+	def destroy(self):
+		pass
+	@abstractmethod
+	def reset() -> bool:
+		pass
+	@abstractmethod
+	def isPar( par:Any ) -> bool:
+		pass
 
-    owner : Any
-
-    expr : str
-    enableExpr : str
-    bindExpr :str
-	
-    name : str
-    label : str
-    help : str
-	
-    @abstractmethod
-    def destroy(self):
-        pass
-    @abstractmethod
-    def reset() -> bool:
-        pass
-    @abstractmethod
-    def isPar( par:Any ) -> bool:
-        pass
+class _NumericParArgs( TypedDict, _T.Generic[ParValueT] ):	
+		min : NotRequired[ParValueT]
+		max : NotRequired[ParValueT]
+		normMin : NotRequired[ParValueT]
+		normMax : NotRequired[ParValueT]
+		clampMin : NotRequired[ParValueT]
+		clampMax : NotRequired[ParValueT]
+		
 
 
-class _NumericPar(Par[ParValueT]):
+class _NumericPar(_Par[ParValueT]):
+	class _args(_ParArgs[ParValueT], _NumericParArgs[ParValueT]): # pyright: ignore[reportGeneralTypeIssues]
+		pass
 	min : ParValueT
 	max : ParValueT
 	normMin : ParValueT
@@ -98,24 +98,32 @@ class _NumericPar(Par[ParValueT]):
 	def evalNorm(self) -> ParValueT:
 		pass
 
-class _MenuPar( Par["str"]):
-    menuNames : List[str]
-    menuLabels : List[str]
-    menuSource : str
-    """
-    Get or set an expression that returns an object with .menuItems .menuNames members. This can be used to create a custom menu whose entries dynamically follow that of another menu for example. Simple menu sources include another parameter with a menu c, an object created by tdu.TableMenu, or an object created by TDFunctions.parMenu.
-    ```
-    p.menuSource = "op('audiodevin1').par.device"
-    ```
-    Note the outside quotes, as menuSource is an expression, not an object.
-    """
+
+class _MenuParArgs( TypedDict ):
+		menuLabes : NotRequired[List[str]]
+		menuSource : NotRequired[str]
+		
+
+class _MenuPar( _Par["str"]):
+	class _args(_ParArgs["str"], _MenuParArgs): # pyright: ignore[reportGeneralTypeIssues]
+		pass
+	menuNames : List[str]
+	menuLabels : List[str]
+	menuSource : str
+	"""
+	Get or set an expression that returns an object with .menuItems .menuNames members. This can be used to create a custom menu whose entries dynamically follow that of another menu for example. Simple menu sources include another parameter with a menu c, an object created by tdu.TableMenu, or an object created by TDFunctions.parMenu.
+	```
+	p.menuSource = "op('audiodevin1').par.device"
+	```
+	Note the outside quotes, as menuSource is an expression, not an object.
+	"""
 
 
 
 
-class ParStr(Par["str"]):
-    "TD Str Parameter"
-    style:str = "Str"
+class ParStr(_Par["str"]):
+	"TD Str Parameter"
+	style:str = "Str"
 
 class ParFloat(_NumericPar["float"]):
 	"TD Float Parameter"
@@ -125,15 +133,15 @@ class ParInt(_NumericPar["int"]):
 	"TD Int Parameter"
 	style:str = "Int"
 
-class ParToggle(Par["bool"]):
+class ParToggle(_Par["bool"]):
 	"TD Toggle Parameter"
 	style:str = "Toggle"
 
-class ParMomentary(Par["bool"]):
+class ParMomentary(_Par["bool"]):
 	"TD Momentary Parameter"
 	style:str = "Momentary"
 
-class ParPulse(Par["bool"]):
+class ParPulse(_Par["bool"]):
 	"TD Pulse Parameter"
 	style:str = "Pulse"
 
@@ -148,7 +156,7 @@ class ParStrMenu(_MenuPar):
 
 # Not yet implemented.
 
-class ParPython(Par["Any"]):
+class ParPython(_Par["Any"]):
 	"TD Python Parameter"
 
 class ParRGB(_NumericPar["float"]):
@@ -175,50 +183,50 @@ class ParXYZ(_NumericPar["float"]):
 class ParXYZW(_NumericPar["float"]):
 	"TD XYZW Parameter"
 
-class ParObject(Par["None | ObjectCOMP"]):
+class ParObject(_Par["None | ObjectCOMP"]):
 	"TD Object Parameter"
 
-class ParSOP(Par["None | SOP"]):
+class ParSOP(_Par["None | SOP"]):
 	"TD SOP Parameter"
 
-class ParPOP(Par["None | POP"]):
+class ParPOP(_Par["None | POP"]):
 	"TD POP Parameter"
 
-class ParMAT(Par["None | MAT"]):
+class ParMAT(_Par["None | MAT"]):
 	"TD MAT Parameter"
 
-class ParCHOP(Par["None | CHOP"]):
+class ParCHOP(_Par["None | CHOP"]):
 	"TD CHOP Parameter"
 
-class ParTOP(Par["None | TOP"]):
+class ParTOP(_Par["None | TOP"]):
 	"TD TOP Parameter"
 
-class ParDAT(Par["None | DAT"]):
+class ParDAT(_Par["None | DAT"]):
 	"TD DAT Parameter"
 
-class ParPanelCOMP(Par["None | PanelCOMP"]):
+class ParPanelCOMP(_Par["None | PanelCOMP"]):
 	"TD PanelCOMP Parameter"
 
-class ParCOMP(Par["None | COMP"]):
+class ParCOMP(_Par["None | COMP"]):
 	"TD COMP Parameter"
 
-class ParOP(Par["None | OP"]):
+class ParOP(_Par["None | OP"]):
 	"TD OP Parameter"
 
-class ParFile(Par["str"]):
+class ParFile(_Par["str"]):
 	"TD File Parameter"
 
-class ParFileSave(Par["str"]):
+class ParFileSave(_Par["str"]):
 	"TD FileSave Parameter"
 
-class ParFolder(Par["str"]):
+class ParFolder(_Par["str"]):
 	"TD Folder Parameter"
 
-class ParHeader(Par["str"]):
+class ParHeader(_Par["str"]):
 	"TD Header Parameter"
 
 class ParSequence(_NumericPar["int"]):
 	"TD Sequence Parameter"
 
-class ParDATAdder(Par["None"]):
+class ParDATAdder(_Par["None"]):
 	"TD DATAdder Parameter"
