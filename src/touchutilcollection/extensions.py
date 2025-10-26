@@ -1,7 +1,12 @@
 from typing import Any, TypeVar, Type, overload, ClassVar, cast
 from abc import abstractmethod
 from dataclasses import dataclass
-from . import partypes
+
+if __package__:
+    from . import partypes
+else:
+    # For testing in TD Itself.
+    import partypes
 
 
 ## Utils Start
@@ -172,15 +177,19 @@ class EnsureExtension ():
 
 __all__ = [ "EnsureExtension", "EnsureParCollection", "parfield" ]
 
+demo = None
 
-class extExample( EnsureExtension ):
-    class par( EnsureParCollection ):
-        Foo = parfield(partypes.ParInt, "Foo")
-        Bar = parfield(partypes.ParFloat, "MyFloat", page ="Different", min = 0, max = 10)
-        Baba = parfield( partypes.ParMenu, "MyMenu", menuLabels=["Eins", "Zwei", "Drei" ] )
+if demo:
 
-    def __init__(self, ownerComp) -> None:
-        super().__init__(ownerComp)
+    class extExample( EnsureExtension ):
+        class par( EnsureParCollection ):
+            Foo = parfield(partypes.ParInt, "Foo")
+            Bar = parfield(partypes.ParFloat, "MyFloat", page ="Different", min = 0, max = 10)
+            Baba = parfield( partypes.ParMenu, "MyMenu", menuLabels=["Eins", "Zwei", "Drei" ] )
+
+        def __init__(self, ownerComp) -> None:
+            super().__init__(ownerComp)
 
 
-
+    something = extExample(None)
+    something.par.Bar
