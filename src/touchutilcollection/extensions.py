@@ -3,10 +3,10 @@ from abc import abstractmethod
 from dataclasses import dataclass
 
 if __package__:
-    from . import partypes
+    from .par_def import partypes
 else:
     # For testing in TD Itself.
-    import partypes
+    import partypes # pyright: ignore[reportMissingImports]
 
 
 ## Utils Start
