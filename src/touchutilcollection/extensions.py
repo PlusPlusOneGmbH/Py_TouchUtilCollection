@@ -2,7 +2,7 @@ from typing import Any, TypeVar, Type, overload, ClassVar, cast, List, Union
 from abc import abstractmethod
 from dataclasses import dataclass
 
-from .par_def import partypes
+
 
 
 
@@ -48,26 +48,26 @@ def ensure_parameter(ownerComp, par_name:str, pagename:str, adder_method_name:st
 ## Utils End
 
 
-T = TypeVar("T")
+
 from typing import Unpack
+from .par_def import partypes
+T = TypeVar("T", partypes.ParFloat, partypes.ParInt, partypes.ParMenu )
 
 
+### HAND WORK!
 @overload
-def parfield(field_type:Type[partypes.ParFloat], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParFloat._args]): 
-    pass
-
-
-@overload
-def parfield(field_type:Type[partypes.ParInt], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParInt._args]): 
+def parfield(field_type:Type[partypes.ParFloat], name:str, page:str = "Custom", label= "", **kwargs:Unpack[ partypes.ParFloat._args]) -> partypes.ParFloat: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParMenu], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParMenu._args]): 
+def parfield(field_type:Type[partypes.ParInt], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParInt._args]) -> partypes.ParInt: 
     pass
 
+@overload
+def parfield(field_type:Type[partypes.ParMenu], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParMenu._args]) -> partypes.ParMenu: 
+    pass
 
-
-def parfield(field_type:Type[T], name:str, page:str = "Custom", label= "",**kwargs): 
+def parfield(field_type:Type[T], name:str, page:str = "Custom", label= "",**kwargs) -> T: 
     pass_args = {
         "name" : name, 
         "label" : label or name,
@@ -75,7 +75,6 @@ def parfield(field_type:Type[T], name:str, page:str = "Custom", label= "",**kwar
         **pop_default_kwarsg( kwargs )
     }
     return cast( T, _Par(pass_args, field_type) ) # pyright: ignore[reportArgumentType] # Yeah yeah, I know :)
-
 
 #class EnsureParCollection( ):
 #    pass
