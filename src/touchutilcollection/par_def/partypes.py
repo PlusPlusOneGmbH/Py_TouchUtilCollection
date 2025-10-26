@@ -6,73 +6,173 @@ These objects don't exist in TD but are necessary for tdi to
 provide proper return types from parameters.
 """
 
-from typing import Any
+from typing import Any, List
 from abc import abstractmethod
+from enum import Enum
+
+class ParMode(Enum):
+    BIND = "BIND"
+    CONSTANT = "CONSTANT"
+    EXPORT = "EXPORT"
+    EXPRESSION = "EXPRESSION"
+
 
 import typing as _T
 ParValueT = _T.TypeVar('ParValueT')
+
 ###
+from typing import TypedDict
+class _ParArgs( TypedDict, _T.Generic[ParValueT] ):
+    defaultMode : ParMode
+    
+    _creationMethodName : str
+    style:str
+
+    val:ParValueT
+	
+    default : ParValueT
+    defaultExpr : str
+    defaultBindExpr : str
+	
+    readOnly : bool
+    enable : bool
+
+    owner : Any
+
+    expr : str
+    enableExpr : str
+    bindExpr :str
+	
+    name : str
+    label : str
+    help : str
 
 class Par(_T.Generic[ParValueT]):
-    """
-    This is only a bandaid and nor for actual production use.
-    """
-    val:ParValueT
+    args = _ParArgs
+    defaultMode : ParMode
+    
+    _creationMethodName : str
+    style:str
 
+    val:ParValueT
     @abstractmethod
     def eval(self) -> ParValueT:
         pass
 	
+    default : ParValueT
+    defaultExpr : str
+    defaultBindExpr : str
+	
+    readOnly : bool
+    enable : bool
+
+    owner : Any
+
+    expr : str
+    enableExpr : str
+    bindExpr :str
+	
+    name : str
+    label : str
+    help : str
+	
+    @abstractmethod
+    def destroy(self):
+        pass
+    @abstractmethod
+    def reset() -> bool:
+        pass
+    @abstractmethod
+    def isPar( par:Any ) -> bool:
+        pass
+
+
+class _NumericPar(Par[ParValueT]):
+	min : ParValueT
+	max : ParValueT
+	normMin : ParValueT
+	normMax : ParValueT
+	clampMin : ParValueT
+	clampMax : ParValueT
+	@abstractmethod
+	def evalNorm(self) -> ParValueT:
+		pass
+
+class _MenuPar( Par["str"]):
+    menuNames : List[str]
+    menuLabels : List[str]
+    menuSource : str
+    """
+    Get or set an expression that returns an object with .menuItems .menuNames members. This can be used to create a custom menu whose entries dynamically follow that of another menu for example. Simple menu sources include another parameter with a menu c, an object created by tdu.TableMenu, or an object created by TDFunctions.parMenu.
+    ```
+    p.menuSource = "op('audiodevin1').par.device"
+    ```
+    Note the outside quotes, as menuSource is an expression, not an object.
+    """
+
+
+
 
 class ParStr(Par["str"]):
-	"TD Str Parameter"
+    "TD Str Parameter"
+    style:str = "Str"
+
+class ParFloat(_NumericPar["float"]):
+	"TD Float Parameter"
+	style:str = "Float"
+
+class ParInt(_NumericPar["int"]):
+	"TD Int Parameter"
+	style:str = "Int"
+
+class ParToggle(Par["bool"]):
+	"TD Toggle Parameter"
+	style:str = "Toggle"
+
+class ParMomentary(Par["bool"]):
+	"TD Momentary Parameter"
+	style:str = "Momentary"
+
+class ParPulse(Par["bool"]):
+	"TD Pulse Parameter"
+	style:str = "Pulse"
+
+class ParMenu(_MenuPar):
+	"TD Menu Parameter"
+	style:str = "Menu"
+
+class ParStrMenu(_MenuPar):
+	"TD StrMenu Parameter"
+	style:str = "StrMenu"
+
+
+# Not yet implemented.
 
 class ParPython(Par["Any"]):
 	"TD Python Parameter"
 
-class ParFloat(Par["float"]):
-	"TD Float Parameter"
-
-class ParInt(Par["int"]):
-	"TD Int Parameter"
-
-class ParToggle(Par["bool"]):
-	"TD Toggle Parameter"
-
-class ParMomentary(Par["bool"]):
-	"TD Momentary Parameter"
-
-class ParPulse(Par["bool"]):
-	"TD Pulse Parameter"
-
-class ParMenu(Par["str"]):
-	"TD Menu Parameter"
-
-class ParStrMenu(Par["str"]):
-	"TD StrMenu Parameter"
-
-class ParRGB(Par["float"]):
+class ParRGB(_NumericPar["float"]):
 	"TD RGB Parameter"
 
-class ParRGBA(Par["float"]):
+class ParRGBA(_NumericPar["float"]):
 	"TD RGBA Parameter"
 
-class ParUV(Par["float"]):
+class ParUV(_NumericPar["float"]):
 	"TD UV Parameter"
 
-class ParUVW(Par["float"]):
+class ParUVW(_NumericPar["float"]):
 	"TD UVW Parameter"
 
-class ParWH(Par["float"]):
+class ParWH(_NumericPar["float"]):
 	"TD WH Parameter"
 
-class ParXY(Par["float"]):
+class ParXY(_NumericPar["float"]):
 	"TD XY Parameter"
 
-class ParXYZ(Par["float"]):
+class ParXYZ(_NumericPar["float"]):
 	"TD XYZ Parameter"
 
-class ParXYZW(Par["float"]):
+class ParXYZW(_NumericPar["float"]):
 	"TD XYZW Parameter"
 
 class ParObject(Par["None | ObjectCOMP"]):
@@ -117,7 +217,7 @@ class ParFolder(Par["str"]):
 class ParHeader(Par["str"]):
 	"TD Header Parameter"
 
-class ParSequence(Par["int"]):
+class ParSequence(_NumericPar["int"]):
 	"TD Sequence Parameter"
 
 class ParDATAdder(Par["None"]):
