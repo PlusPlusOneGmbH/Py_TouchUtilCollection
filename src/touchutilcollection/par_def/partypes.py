@@ -23,7 +23,7 @@ ParValueT = _T.TypeVar('ParValueT')
 from typing import NotRequired, TypedDict
 ###
 class _ParArgs( TypedDict, _T.Generic[ParValueT] ):
-		defaultMode : NotRequired[ParMode]	= ParMode.CONSTANT	
+		defaultMode : NotRequired[ParMode]
 		default : NotRequired[ParValueT]
 		defaultExpr : NotRequired[str]
 		defaultBindExpr : NotRequired[str]
@@ -86,7 +86,7 @@ class _NumericParArgs( TypedDict, _T.Generic[ParValueT] ):
 
 
 class _NumericPar(_Par[ParValueT]):
-	class _args(_ParArgs[ParValueT], _NumericParArgs[ParValueT]): # pyright: ignore[reportGeneralTypeIssues]
+	class _args(_NumericParArgs[ParValueT], _ParArgs[ParValueT]): # pyright: ignore[reportGeneralTypeIssues]
 		pass
 	min : ParValueT
 	max : ParValueT
@@ -100,12 +100,12 @@ class _NumericPar(_Par[ParValueT]):
 
 
 class _MenuParArgs( TypedDict ):
-		menuLabes : NotRequired[List[str]]
+		menuLabels : NotRequired[List[str]]
 		menuSource : NotRequired[str]
 		
 
 class _MenuPar( _Par["str"]):
-	class _args(_ParArgs["str"], _MenuParArgs): # pyright: ignore[reportGeneralTypeIssues]
+	class _args(_MenuParArgs, _ParArgs["str"]): # pyright: ignore[reportGeneralTypeIssues]
 		pass
 	menuNames : List[str]
 	menuLabels : List[str]
@@ -153,9 +153,18 @@ class ParStrMenu(_MenuPar):
 	"TD StrMenu Parameter"
 	style:str = "StrMenu"
 
+class ParCOMP(_Par["None | COMP"]):
+	"TD COMP Parameter"
+	style:str = "COMP"
+
+
+class ParOP(_Par["None | OP"]):
+	"TD OP Parameter"
+	style:str = "OP"
+
 
 # Not yet implemented.
-
+"""
 class ParPython(_Par["Any"]):
 	"TD Python Parameter"
 
@@ -230,3 +239,4 @@ class ParSequence(_NumericPar["int"]):
 
 class ParDATAdder(_Par["None"]):
 	"TD DATAdder Parameter"
+"""
