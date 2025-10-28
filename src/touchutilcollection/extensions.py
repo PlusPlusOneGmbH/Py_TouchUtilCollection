@@ -9,9 +9,10 @@ from .par_def import partypes
 ## Utils Start
 lookupdict = {}
 
+
 def _pop_default_kwarsg( target_dict:dict ):
     return {
-        key : value for key, value in target_dict.items() if key not in  ["page", "label"]
+        key : value for key, value in target_dict.items() if key not in  ["page"]
     }
 
 @dataclass
@@ -20,6 +21,7 @@ class _ParProxy():
     par_type : Type[partypes._Par]
 
     def __call__(self, ownerComp) -> Any:
+        print(self.data )
         target_par = ensure_parameter(
             ownerComp, 
             self.data["name"], 
@@ -27,6 +29,10 @@ class _ParProxy():
             f"append{self.par_type.style}", 
             self.par_type.style
         )  
+
+        for attrname, attrvalue in self.data.items():
+            if attrname in ("name", "page"): continue
+            setattr( target_par, attrname, attrvalue )
 
         #One can dram. Pleas derivative senpai.
         #_dependency_object = tdu.Dependency( target_par.eval() )
@@ -50,7 +56,11 @@ def ensure_parameter(ownerComp, par_name:str, pagename:str, adder_method_name:st
     if ownerComp.par[par_name] is None:
         # now lets check if the par already exists, if not    
         getattr(page, adder_method_name)( par_name )
-    return ownerComp.par[par_name] # This noteably only works with single value parameters!
+    resulting_par = ownerComp.par[par_name] # This noteably only works with single value parameters!
+    resulting_par.page = page
+    return resulting_par
+
+
 ## Utils End
 
 
@@ -61,45 +71,46 @@ T = TypeVar("T")
 
 ### Overlods for typehinting.
 @overload
-def parfield(field_type:Type[partypes.ParStr], name:str, page:str = "Custom", label= "", **kwargs:Unpack[ partypes.ParStr._args]) -> partypes.ParStr: 
+def parfield(field_type:Type[partypes.ParStr], page:str = "Custom", **kwargs:Unpack[ partypes.ParStr._args]) -> partypes.ParStr: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParFloat], name:str, page:str = "Custom", label= "", **kwargs:Unpack[ partypes.ParFloat._args]) -> partypes.ParFloat: 
+def parfield(field_type:Type[partypes.ParFloat], page:str = "Custom", **kwargs:Unpack[ partypes.ParFloat._args]) -> partypes.ParFloat: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParInt], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParInt._args]) -> partypes.ParInt: 
+def parfield(field_type:Type[partypes.ParInt], page:str = "Custom",**kwargs:Unpack[ partypes.ParInt._args]) -> partypes.ParInt: 
     pass
 @overload
-def parfield(field_type:Type[partypes.ParToggle], name:str, page:str = "Custom", label= "", **kwargs:Unpack[ partypes.ParToggle._args]) -> partypes.ParToggle: 
-    pass
-
-@overload
-def parfield(field_type:Type[partypes.ParMomentary], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParMomentary._args ]) -> partypes.ParMomentary: 
+def parfield(field_type:Type[partypes.ParToggle], page:str = "Custom", **kwargs:Unpack[ partypes.ParToggle._args]) -> partypes.ParToggle: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParPulse], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParPulse._args ]) -> partypes.ParPulse: 
+def parfield(field_type:Type[partypes.ParMomentary], page:str = "Custom",**kwargs:Unpack[ partypes.ParMomentary._args ]) -> partypes.ParMomentary: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParMenu], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParMenu._args]) -> partypes.ParMenu: 
+def parfield(field_type:Type[partypes.ParPulse], page:str = "Custom",**kwargs:Unpack[ partypes.ParPulse._args ]) -> partypes.ParPulse: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParStrMenu], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParStrMenu._args]) -> partypes.ParStrMenu: 
+def parfield(field_type:Type[partypes.ParMenu], page:str = "Custom",**kwargs:Unpack[ partypes.ParMenu._args]) -> partypes.ParMenu: 
     pass
 
 @overload
-def parfield(field_type:Type[partypes.ParOP], name:str, page:str = "Custom", label= "",**kwargs:Unpack[ partypes.ParOP._args]) -> partypes.ParOP: 
+def parfield(field_type:Type[partypes.ParStrMenu], page:str = "Custom",**kwargs:Unpack[ partypes.ParStrMenu._args]) -> partypes.ParStrMenu: 
+    pass
+
+@overload
+def parfield(field_type:Type[partypes.ParOP], page:str = "Custom",**kwargs:Unpack[ partypes.ParOP._args]) -> partypes.ParOP: 
     pass
 
 ## Actual Implementation.
-def parfield(field_type:Type[T], name:str, page:str = "Custom", label= "",**kwargs) -> T: 
+
+from sys import _getframe
+
+def parfield(field_type:Type[T], page:str = "Custom", **kwargs) -> T: 
     pass_args = {
-        "name" : name, 
-        "label" : label or name,
         "page" : page,
         **_pop_default_kwarsg( kwargs )
     }
@@ -112,6 +123,8 @@ class EnsureExtension():
         for attr_name in dir(self.par):
             attr_object = getattr( self.par, attr_name )
             if not isinstance( attr_object, _ParProxy): continue
+            # Set name HERE!
+            attr_object.data["name"] = attr_name
             setattr( self.par, attr_name, attr_object(ownerComp) )
 
 
@@ -122,9 +135,9 @@ if demo:
 
     class extExample( EnsureExtension ):
         class par:
-            Foo = parfield(partypes.ParFloat, "Foo")
-            Bar = parfield(partypes.ParFloat, "MyFloat", page ="Different", min = 0, max = 10)
-            Baba = parfield( partypes.ParMenu, "MyMenu", menuLabels=["Eins", "Zwei", "Drei" ],bindExpr="Hello World")
+            Foo = parfield(partypes.ParFloat)
+            Bar = parfield(partypes.ParFloat, page ="Different", min = 0, max = 10)
+            Baba = parfield( partypes.ParMenu, menuLabels=["Eins", "Zwei", "Drei" ],bindExpr="Hello World")
 
         def __init__(self, ownerComp) -> None:
             super().__init__(ownerComp)

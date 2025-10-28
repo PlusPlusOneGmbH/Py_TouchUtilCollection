@@ -23,6 +23,8 @@ ParValueT = _T.TypeVar('ParValueT')
 from typing import NotRequired, TypedDict
 ###
 class _ParArgs( TypedDict, _T.Generic[ParValueT] ):
+		label 		: NotRequired[str]
+		mode 		: NotRequired[ParMode]
 		defaultMode : NotRequired[ParMode]
 		default : NotRequired[ParValueT]
 		defaultExpr : NotRequired[str]
@@ -39,6 +41,7 @@ class _Par(_T.Generic[ParValueT]):
 		pass
 
 	defaultMode : ParMode
+	mode		: ParMode
 	
 	_creationMethodName : str
 	style:str
