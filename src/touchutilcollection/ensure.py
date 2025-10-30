@@ -1,19 +1,15 @@
-from td import baseCOMP, OP , COMP # pyright: ignore[reportMissingImports]
-
-from pathlib import Path
-from typing import TypeVar
+from td import root, COMP, baseCOMP, op  # pyright: ignore[reportMissingImports]
 from os import environ
+from pathlib import Path
 
-T = TypeVar("T")
+def ensure_global_tox(
+		filepath, 
+		op_shortcut, 
+		root_comp = root, 
+		default_path = "utils", 
+		reloadcustom = False, 
+		reloadbuiltin = False):
 
-
-def refresh_tox(target_operator:COMP):
-    target_operator.par.enableexternaltoxpulse.pulse(True)
-
-
-
-def ensure_tox(filepath, op_shortcut, root_comp = root, default_path = "utils", reloadcustom = False, reloadbuiltin = False):
-	print("operator.ensure_tox is marked for depereaction. Use ensure.*** in the future.")
 	if (_potentialy:= getattr(op, op_shortcut, None)) is not None:
 		return _potentialy
 
@@ -30,14 +26,18 @@ def ensure_tox(filepath, op_shortcut, root_comp = root, default_path = "utils", 
 	newly_loaded.par.reloadcustom.val 		= reloadcustom
 	newly_loaded.par.reloadbuiltin.val 		= reloadbuiltin
 	newly_loaded.par.enableexternaltoxpulse.pulse()
-	
 	return newly_loaded
+	
+from typing import TypeVar, Type, cast
+T = TypeVar("T")
+def ensure_global_tdp( tdp_module, default_path = "utils", root_comp = "root", cast_as:Type[T] = COMP ):
+	return  cast(T,
+		ensure_global_tox(
+				 tdp_module.ToxFile,
+				 getattr( tdp_module, "DefaultGlobalOpShortcut", tdp_module.__name__.capitalize() ),
+				 root_comp      = root_comp,
+				 default_path   =   default_path
+             )
+    )
 
-def iter_parents( target_op:OP ):
-    next_parent = target_op
-    while next_parent:
-        next_parent = target_op.parent()
-        if next_parent is None: break
-        target_op = next_parent
-        yield target_op
-    return target_op
+
