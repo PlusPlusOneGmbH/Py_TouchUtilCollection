@@ -21,7 +21,6 @@ class _ParProxy():
     par_type : Type[partypes._Par]
 
     def __call__(self, ownerComp) -> Any:
-        print(self.data )
         target_par = ensure_parameter(
             ownerComp, 
             self.data["name"], 
@@ -47,7 +46,10 @@ def ensure_page(ownerComp, pagename):
         if page.name == pagename: return page
     return ownerComp.appendCustomPage( pagename )
 
+from .parameter import is_legal_name
+
 def ensure_parameter(ownerComp, par_name:str, pagename:str, adder_method_name:str, par_style:str):
+    if not is_legal_name( par_name ): raise Exception("Illegal CustomPar Name.")
     page = ensure_page( ownerComp, pagename )
     if (par := ownerComp.par[par_name]) is not None:
         # lets validate the partype itself.
