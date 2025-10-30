@@ -30,3 +30,17 @@ def dictkeys_to_source(source_dict:Dict[str, Any], capitalize_labels=False):
 		[ key for key in source_dict.keys() ],
 		[ key.capitalize() for key in source_dict.keys() ] if capitalize_labels else []
 	)
+import re
+
+def is_legal_name(name:str):
+		"""
+		Return a legal par name or None if name has no usable characters.
+		Size and style are required to do duplicate checking
+		if okName is provided, that name will be allowed. Used for name changes.
+		"""
+		if name is None:
+			return False
+		# fix characters
+		_name = name.strip().lower().capitalize()  # fix cases
+		_name = re.sub('[^A-Za-z0-9]+', '', _name)  # remove special chars
+		return _name == name
