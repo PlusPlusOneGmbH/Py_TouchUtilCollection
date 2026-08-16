@@ -328,7 +328,7 @@ def auto_callback_system( ownerComp:COMP ):
     """
     run( _auto_callback_system, ownerComp, delayFrames = 1 )
 
-__all__ = [ "EnsureExtension", "parfield", "partypes" ]
+__all__ = [ "EnsureExtension", "parfield", "partypes", "auto_callback_system" ]
 
 
 
