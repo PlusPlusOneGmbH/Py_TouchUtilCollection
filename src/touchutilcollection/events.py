@@ -1,4 +1,4 @@
-from td import OP, debug  # pyright: ignore[reportMissingImports]
+from td import *  # pyright: ignore[reportMissingImports]
 from typing import Dict, Callable, Tuple, List, Set
 from .operator import iter_parents
 

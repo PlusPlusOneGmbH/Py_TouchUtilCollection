@@ -2,13 +2,13 @@ from td import * # pyright: ignore[reportMissingImports]
 
 from .timing import Ticker, Timer
 
-from typing import Union, List, Coroutine
+from typing import Union, List, Coroutine, Dict, Tuple
 
 import asyncio
 from asyncio import Task, AbstractEventLoop
 
 
-_loops:Dict[str, tuple[Ticker, AbstractEventLoop]] = {}
+_loops:Dict[str, Tuple[Ticker, AbstractEventLoop]] = {}
 
 DEFAULT_LOOP_NAME = "_default"
 

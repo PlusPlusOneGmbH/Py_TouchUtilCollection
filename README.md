@@ -90,16 +90,13 @@ A pruely python approach to event-handling similiar to how it is handled in the 
 You can subscribe to any operator and any event. Events will bubble up the path. 
 
 ```python
-from touchutilcollection.events import subscribe
+from touchutilcollection.events import subscribe, emit
 
-class my_extensions
-    def event_handler(_source:OP, emitter:OP, event_name:str, bubbled:bool, *args, **kwargs):
-        pass
-    def __init__(self, ownerComp:BaseCOMP):
-        subscribe( op("/project1"), "foobar", self.event_handler )
+def example_handler(_source:OP, emitter:OP, event_name:str, bubbled:bool, *args, **kwargs):
+    debug( _source, emitter, event_name, bubbled, args, kwargs)
+    pass
 
-# and somewhere else
-from touchutilcollection.events import emit
-emit( op("/project1/out1"), "foobar", "some_argument")
+subscribe( root, "foobar", example_handler)
+emit( me, "foobar", "example_arg")
 # note that bubbled will be true in the event-handler as we emittet the event from a child-component.
 ```
