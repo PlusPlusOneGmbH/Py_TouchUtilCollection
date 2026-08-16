@@ -25,6 +25,9 @@ class _ParGroupArgs( TypedDict, _T.Generic[ParValueT] ):
 		enable      : NotRequired[bool]
 		enableExpr  : NotRequired[str]
 
+		startSection: NotRequired[bool]
+		order		: NotRequired[float]
+
 class _ParGroup(_T.Generic[ParValueT, ParTypeT]):
 	class _args(_ParGroupArgs[ParValueT]): # pyright: ignore[reportGeneralTypeIssues]
 		pass
@@ -61,6 +64,9 @@ class _ParGroup(_T.Generic[ParValueT, ParTypeT]):
 	name : str
 	label : str
 	help : str
+
+	startSection: bool
+	order		: float
 	
 	@abstractmethod
 	def destroy(self):
@@ -163,3 +169,5 @@ class ParGroupWH(_NumericParGroup["float", ParFloat]):
 		size : Literal[2]
 	"TD XYZW Parameter"
 	style:str = "WH"
+
+__all__ = ["ParGroupFloat", "ParGroupMenu", "ParGroupStrMenu", "ParGroupInt", "ParGroupRGBA", "ParGroupXYZW", "ParGroupUVW", "ParGroupWH"]
