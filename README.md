@@ -46,6 +46,20 @@ class extExample(
         self.parGroup.Somergb[0].val = 2 # access pars using index
         self.parGroup.default = (1,2,3) # same members as pars, but as touples. size needs to be considered!
 ```
+Alost helps with the autocallback-system for parameters.
+
+```python
+from touchutilcollection.extensions import auto_callback_system
+
+def my_extensions:
+    def __init__(self, ownerComp:COMP):
+        auto_callback_system( ownerComp )
+
+    def on_Foobar_Value_Change( self, par:Par, prev_val:str):
+        """ Gets called when the value of the parameter Foobar changes,"""
+        debug("Foobar")
+```
+
 
 ## Ensure
 Ensure existence of components without having to manualy create them (or even see them. )
@@ -62,4 +76,30 @@ Takes values from a TDP and applies the same Logic.
 from touchutilcollection.ensure import ensure_global_tox
 from TauCeti import Tweener
 TweenerComp = ensure_global_tox( Tweener )
+```
+
+
+## Network
+```python
+from touchutilcollection.network import get_free_port
+# Will return any free port currently available on the system
+```
+
+## Events
+A pruely python approach to event-handling similiar to how it is handled in the DOM/HTML.
+You can subscribe to any operator and any event. Events will bubble up the path. 
+
+```python
+from touchutilcollection.events import subscribe
+
+class my_extensions
+    def event_handler(_source:OP, emitter:OP, event_name:str, bubbled:bool, *args, **kwargs):
+        pass
+    def __init__(self, ownerComp:BaseCOMP):
+        subscribe( op("/project1"), "foobar", self.event_handler )
+
+# and somewhere else
+from touchutilcollection.events import emit
+emit( op("/project1/out1"), "foobar", "some_argument")
+# note that bubbled will be true in the event-handler as we emittet the event from a child-component.
 ```
