@@ -288,7 +288,47 @@ class EnsureExtension():
                 pargroup_objct.reset()
         _par_metadata_dict.clear()
 
-__all__ = [ "EnsureExtension", "parfield", "partypes" ]
+from pathlib import Path
+from td import COMP, parameterexecuteDAT, run # pyright: ignore[reportMissingImports]
+
+def _auto_callback_system(ownerComp:COMP):
+    dat_name = "__auto_par_execute"
+    
+    target_parexecute_dat = ownerComp.op(dat_name) or ownerComp.create( parameterexecuteDAT, dat_name)
+    if not isinstance( target_parexecute_dat, parameterexecuteDAT): 
+        target_parexecute_dat = target_parexecute_dat.changeType( parameterexecuteDAT )
+    for parameter in target_parexecute_dat.pars("*"):
+        parameter.reset()
+    assert isinstance( target_parexecute_dat, parameterexecuteDAT )
+
+    target_parexecute_dat.expose = False
+    
+    target_parexecute_dat.par.op.val = ".."
+    target_parexecute_dat.par.pars.val = "*"
+    target_parexecute_dat.par.valuechange.val = False
+    target_parexecute_dat.par.valueschanged.val = True
+    target_parexecute_dat.par.onpulse.val = True
+
+    target_parexecute_dat.text = Path( Path(__file__).parent, "parameter/callback_def.py").read_text()
+
+
+# This is kinda annying, but something in the original script is reinitting the extension if not delayed....
+def auto_callback_system( ownerComp:COMP ):
+    """
+        Creates a parameterExecuteDat that will crawl all extensions for function with the following signature
+
+        def on_$Parname$_Value_Change( par, prev_value)
+        def on_$Parname$_Pulse( par )
+
+        Example: To create  callback when you menu par with the name Foobar is changed, define
+        ```python
+        def on_Foobar_Value_Change( self, par:Par, prev_val:str):
+            debug("Foobar")
+        ```
+    """
+    run( _auto_callback_system, ownerComp, delayFrames = 1 )
+
+__all__ = [ "EnsureExtension", "parfield", "partypes", "auto_callback_system" ]
 
 
 
