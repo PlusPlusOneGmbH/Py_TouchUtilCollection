@@ -16,15 +16,19 @@ class Timer:
     
     def __del__(self):
         if not isinstance( self._runner, Run): return
-        try:
-            self._runner.kill()
-        except tdError:
-            pass
+        self.stop()
 
     callbacks:List[Timer_Callback] = list()
 
     def start(self):
         self._runner = run( "args[0]()", self.tick, delayFrames=self.stepsize )
+    
+    def stop(self):
+        try:
+            self._runner.kill()
+        except tdError:
+            pass
+        self.active = False
 
     def tick(self):
         if self.active:
